@@ -27,7 +27,8 @@ jobs:
       run: pio run -e ${{ env.TARGET }}
     - name: Upload Firmware
       uses: actions/upload-artifact@v3
-      with: 
+      with:
+        name: firmware
         path: .pio/build/${{ env.TARGET }}/firmware.bin
 
     - name: Compile Filesystem
@@ -40,6 +41,7 @@ jobs:
       if: steps.check_files.outputs.files_exists == 'true'
       uses: actions/upload-artifact@v3
       with: 
+        name: filesystem
         path: .pio/build/${{ env.TARGET }}/filesystem.bin
 
   release:
