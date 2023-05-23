@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <ota.h>
+// #include <LittleFS.h>
 
 // This string should correspond to github tag used for Releasing (via. Github Actions)
 #define VERSION "0.0.1"
@@ -18,18 +19,41 @@
 #define PASSWORD ""
 #define HOSTNAME "ESP8266 OTA"
 
+GitHubOTA GitHubOTA(VERSION, RELEASE_URL);
+
+// void listRoot(){
+//   Serial.printf("Listing root directory\r\n");
+
+//   File root = LittleFS.open("/", "r");
+//   File file = root.openNextFile();
+
+//   while(file){
+//     Serial.printf("  FILE: %s\r\n", file.name());
+//     file = root.openNextFile();
+//   }
+// }
+
 void setup()
 {
   Serial.begin(115200);
+  delay(500);
+  // LittleFS.begin();
   pinMode(LED_BUILTIN, OUTPUT);
 
   setup_wifi();
-  init_ota(VERSION);
+
+  // Serial.println( "Before update" ); 
+  // listRoot();
+
+  // GitHubOTA.handle();
+
+  // Serial.println( "After update" ); 
+  // listRoot();
 }
 
 void loop()
 {
-  handle_ota(RELEASE_URL);
+  GitHubOTA.handle();
 
   // Your code goes here
   digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
