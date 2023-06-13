@@ -1,6 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <LittleFS.h>
 #include <ota.h>
-// #include <LittleFS.h>
 
 // This string should correspond to github tag used for Releasing (via. Github Actions)
 #define VERSION "0.0.1"
@@ -9,51 +9,53 @@
 // This is a link to repo where your firmware updates will be pulled from
 // #define RELEASE_URL "https://api.github.com/repos/your_username/your_repo/releases/latest"
 
-// Use this version of the URL together with init_ota(VERSION, true) under debugging
-// to spare yourself from getting timeout from GitHub API
+// Use this version of the URL together with 
+//Line 22: GitHubOTA GitHubOTA(VERSION, RELEASE_URL, "firmware.bin", "filesystem.bin", "/.fs_update_pending", false);
+// under debugging to spare yourself from getting timeout from GitHub API
 #define RELEASE_URL "https://github.com/your_username/your_repo/releases/latest"
 
 #define DELAY_MS 1000
 
 #define SSID ""
 #define PASSWORD ""
-#define HOSTNAME "ESP8266 OTA"
 
-GitHubOTA GitHubOTA(VERSION, RELEASE_URL);
+// Uncomment the line below when using Github Api to get the latest release (Line 9)
+//GitHubOTA GitHubOTA(VERSION, RELEASE_URL);
 
-// void listRoot(){
-//   Serial.printf("Listing root directory\r\n");
+GitHubOTA GitHubOTA(VERSION, RELEASE_URL, "firmware.bin", "filesystem.bin", "/.fs_update_pending", false);
 
-//   File root = LittleFS.open("/", "r");
-//   File file = root.openNextFile();
+void listRoot(){
+  Serial.printf("Listing root directory\r\n");
 
-//   while(file){
-//     Serial.printf("  FILE: %s\r\n", file.name());
-//     file = root.openNextFile();
-//   }
-// }
+  File root = LittleFS.open("/", "r");
+  File file = root.openNextFile();
+
+  while(file){
+    Serial.printf("  FILE: %s\r\n", file.name());
+    file = root.openNextFile();
+  }
+}
 
 void setup()
 {
-  Serial.begin(115200);
-  delay(500);
-  // LittleFS.begin();
   pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(115200);
+  while(!Serial);
+
+  Serial.printf("Current firmware version: %s\n", VERSION); 
+
+  LittleFS.begin();
+  listRoot();
 
   setup_wifi();
 
-  // Serial.println( "Before update" ); 
-  // listRoot();
-
-  // GitHubOTA.handle();
-
-  // Serial.println( "After update" ); 
-  // listRoot();
+  GitHubOTA.handle();
 }
 
 void loop()
 {
-  GitHubOTA.handle();
+  // Uncomment this line to check for updates on every loop iteration
+  // GitHubOTA.handle();
 
   // Your code goes here
   digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
@@ -64,7 +66,6 @@ void loop()
 
 void setup_wifi(){
   Serial.println("Initialize WiFi");
-  WiFi.hostname(HOSTNAME);
   WiFi.begin(SSID, PASSWORD);
 
   Serial.print("Connecting");
