@@ -3,10 +3,13 @@
 #include <LittleFS.h>
 #include <GitHubOTA.h>
 #include <GitHubFsOTA.h>
+#include <semver_extensions.h>
+#include <iostream>
 
 // This string should correspond to github tag used for Releasing (via. Github Actions)
 #define VERSION "0.0.1"
 
+auto current_version = semver_from_string(VERSION);
 // Replace your_username/your_repo with your values (ex. axcap/Esp-GitHub-OTA)
 // This is a link to repo where your firmware updates will be pulled from
 // #define RELEASE_URL "https://api.github.com/repos/your_username/your_repo/releases/latest"
@@ -21,9 +24,7 @@
 #define SSID ""
 #define PASSWORD ""
 
-// Uncomment the line below when using Github Api to get the latest release (Line 9)
-//GitHubOTA GitHubOTA(VERSION, RELEASE_URL);
-
+// Remove the 'true' argument to use GitHub api to get the latest release
 GitHubOTA OsOta(VERSION, RELEASE_URL, "firmware.bin", true);
 GitHubFsOTA FsOta(VERSION, RELEASE_URL, "filesystem.bin", true);
 
@@ -44,9 +45,17 @@ void setup()
 
   setup_wifi();
 
-  // Chech for updates
-  FsOta.handle();
-  OsOta.handle();
+  // Automatically update when available update detected
+  // FsOta.handle();
+  // OsOta.handle();
+
+  // Manually fetch newest firmware version and update if needed
+  auto newest_version = OsOta.get_newest_version();
+
+  Serial.printf(semver_to_string(&newest_version).c_str());
+  if(newest_version > current_version){
+    OsOta.update_firmware();
+  }
 }
 
 void loop()
